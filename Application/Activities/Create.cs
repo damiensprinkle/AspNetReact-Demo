@@ -1,3 +1,6 @@
+using Application.Core;
+using Application.DTOs;
+using AutoMapper;
 using Domain;
 using MediatR;
 using Persistence;
@@ -6,23 +9,34 @@ namespace Application.Activities
 {
     public class Create
     {
-        public class Command : IRequest 
+        public class Command : IRequest<Result<ActivityDto>>
         {
-            public Activity Activity { get; set; }
+            public ActivityFormDto Activity { get; set; } = null!;
         }
 
-        public class Handler : IRequestHandler<Command>
+        public class Handler : IRequestHandler<Command, Result<ActivityDto>>
         {
             private readonly DataContext _context;
-            public Handler(DataContext context)
+            private readonly IMapper _mapper;
+
+            public Handler(DataContext context, IMapper mapper)
             {
                 _context = context;
+                _mapper = mapper;
             }
 
-            public async Task Handle(Command request, CancellationToken cancellationToken)
+            public async Task<Result<ActivityDto>> Handle(Command request, CancellationToken cancellationToken)
             {
-                _context.Activities.Add(request.Activity);
-                await _context.SaveChangesAsync();
+                var activity = _mapper.Map<Activity>(request.Activity);
+                activity.Id = Guid.NewGuid();
+
+                _context.Activities.Add(activity);
+                var result = await _context.SaveChangesAsync(cancellationToken) > 0;
+
+                if (!result)
+                    return Result<ActivityDto>.Failure("Failed to create activity");
+
+                return Result<ActivityDto>.Success(_mapper.Map<ActivityDto>(activity));
             }
         }
     }

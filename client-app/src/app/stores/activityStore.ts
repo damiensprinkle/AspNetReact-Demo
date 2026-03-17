@@ -1,12 +1,10 @@
 import { makeAutoObservable, runInAction } from "mobx";
-import { Activity } from "../models/activity";
+import { Activity, ActivityFormValues } from "../models/activity";
 import agent from "../api/agent";
-import { v4 as uuid } from "uuid";
 
 export default class ActivityStore {
   activities: Activity[] = [];
   selectedActivity: Activity | undefined = undefined;
-  editMode = false;
   loading = false;
   loadingInitial = false;
 
@@ -17,17 +15,16 @@ export default class ActivityStore {
   loadActivities = async () => {
     this.setLoadingInitial(true);
     try {
-      const activities = await agent.activites.list();
+      const activities = await agent.activities.list();
       runInAction(() => {
-        this.activities = [];
+        this.activities = activities.map((a) => ({
+          ...a,
+          date: a.date.split("T")[0],
+        }));
       });
-      activities.forEach((activity) => {
-        activity.date = activity.date.split("T")[0];
-        this.activities.push(activity);
-      });
-      this.setLoadingInitial(false);
     } catch (error) {
-      console.log(error);
+      console.error(error);
+    } finally {
       this.setLoadingInitial(false);
     }
   };
@@ -44,78 +41,50 @@ export default class ActivityStore {
     this.selectedActivity = undefined;
   };
 
-  openForm = (id?: string) => {
-    if (id === null) {
-      this.cancelSelectedActivity();
-    } else {
-      this.selectActivity(id);
-    }
-    this.editMode = true;
-  };
-
-  closeForm = () => {
-    this.editMode = false;
-  };
-
-  createActivity = async (activity: Activity) => {
+  createActivityWithReturn = async (values: ActivityFormValues): Promise<Activity | undefined> => {
     this.loading = true;
-    activity.id = uuid();
     try {
-      await agent.activites.create(activity);
+      const activity = await agent.activities.create(values);
       runInAction(() => {
         this.activities.push(activity);
         this.selectedActivity = activity;
-        this.editMode = false;
-        this.loading = false;
       });
+      return activity;
     } catch (error) {
-      console.log(error);
-      runInAction(() => {
-        this.loading = false;
-      });
+      console.error(error);
+      return undefined;
+    } finally {
+      runInAction(() => { this.loading = false; });
     }
   };
 
-  updateActivity = async (activity: Activity) => {
+  updateActivity = async (id: string, values: ActivityFormValues) => {
     this.loading = true;
     try {
-      await agent.activites.update(activity);
+      const updated = await agent.activities.update(id, values);
       runInAction(() => {
-        this.activities = [
-          ...this.activities.filter((x) => x.id !== activity.id),
-          activity,
-        ];
-        this.selectedActivity = activity;
-        this.editMode = false;
-        this.loading = false;
+        this.activities = this.activities.map((a) => (a.id === id ? updated : a));
+        this.selectedActivity = updated;
       });
     } catch (error) {
-      console.log(error);
-      runInAction(() => {
-        this.loading = false;
-      });
+      console.error(error);
+    } finally {
+      runInAction(() => { this.loading = false; });
     }
   };
 
   deleteActivity = async (id: string) => {
-    this.loading=true;
-    try{
-        await agent.activites.delete(id);
-        runInAction(() => {
-            this.activities = [...this.activities.filter((x) => x.id !== id)];
-            if (this.selectedActivity?.id === id) 
-                {
-                    this.cancelSelectedActivity();
-                }
-            
-            this.loading=false;
-        })
+    this.loading = true;
+    try {
+      await agent.activities.delete(id);
+      runInAction(() => {
+        this.activities = this.activities.filter((a) => a.id !== id);
+        if (this.selectedActivity?.id === id) this.cancelSelectedActivity();
+      });
+    } catch (error) {
+      console.error(error);
+    } finally {
+      runInAction(() => { this.loading = false; });
     }
-    catch(error){
-        console.log(error);
-        runInAction(() => {
-            this.loading = false;
-          });
-    }
-  }
+  };
 }

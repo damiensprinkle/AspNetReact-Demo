@@ -1,0 +1,161 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  # ── Build + API integration tests (in-process, no live server needed) ────────
+  build-api:
+    name: Build & Test API
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "7.0.x"
+
+      - name: Restore
+        run: dotnet restore AspNetReact-Demo.sln
+
+      - name: Build
+        run: dotnet build AspNetReact-Demo.sln --no-restore --configuration Release
+
+      - name: API Integration Tests
+        run: |
+          dotnet test Tests.API/Tests.API.csproj \
+            --no-build \
+            --configuration Release \
+            --logger "trx;LogFileName=api-results.trx" \
+            --results-directory TestResults
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-test-results
+          path: TestResults/
+          retention-days: 7
+
+  # ── Type-check + production build of the React client ────────────────────────
+  build-client:
+    name: Build React Client
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: client-app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: client-app/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Build
+        run: npm run build
+
+  # ── E2E tests — starts both servers then runs Playwright ─────────────────────
+  test-e2e:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: [build-api, build-client]
+
+    env:
+      # Supply API config that is normally in gitignored appsettings.Development.json
+      TokenKey: "super-secret-ci-key-for-hs512-that-is-at-least-sixty-four-bytes-long!"
+      ConnectionStrings__DefaultConnection: "DataSource=/tmp/ci_test.db"
+      ASPNETCORE_URLS: "http://localhost:5000"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "7.0.x"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: client-app/package-lock.json
+
+      # ── Build everything ──────────────────────────────────────────────────────
+      - name: Restore .NET
+        run: dotnet restore AspNetReact-Demo.sln
+
+      - name: Build API
+        run: dotnet build API/API.csproj --no-restore --configuration Release
+
+      - name: Build E2E project
+        run: dotnet build Tests.E2E/Tests.E2E.csproj --no-restore --configuration Release
+
+      - name: Install Playwright browsers
+        run: pwsh Tests.E2E/bin/Release/net7.0/playwright.ps1 install --with-deps chromium
+
+      - name: Install frontend dependencies
+        working-directory: client-app
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: client-app
+        run: npm run build
+
+      # ── Start both servers in the background ──────────────────────────────────
+      - name: Start API
+        run: dotnet run --project API/API.csproj --no-build --configuration Release &
+
+      - name: Start frontend (vite preview)
+        working-directory: client-app
+        run: npm run preview &
+
+      # ── Wait until both are accepting requests ────────────────────────────────
+      - name: Wait for API
+        run: |
+          echo "Waiting for API at http://localhost:5000/api/activities ..."
+          timeout 60 bash -c \
+            'until curl -sf http://localhost:5000/api/activities > /dev/null; do sleep 2; done'
+          echo "API ready."
+
+      - name: Wait for frontend
+        run: |
+          echo "Waiting for frontend at http://localhost:3000 ..."
+          timeout 30 bash -c \
+            'until curl -sf http://localhost:3000 > /dev/null; do sleep 1; done'
+          echo "Frontend ready."
+
+      # ── Run tests ─────────────────────────────────────────────────────────────
+      - name: Run E2E tests
+        run: |
+          dotnet test Tests.E2E/Tests.E2E.csproj \
+            --no-build \
+            --configuration Release \
+            --logger "trx;LogFileName=e2e-results.trx" \
+            --results-directory TestResults
+
+      # ── Collect artifacts ─────────────────────────────────────────────────────
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-test-results
+          path: TestResults/
+          retention-days: 7
+
+      - name: Upload Playwright traces on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces
+          path: "**/*.zip"
+          retention-days: 7

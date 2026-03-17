@@ -33,7 +33,7 @@
                 "watch",
                 "run",
                 "--project",
-                "${workspaceFolder}/AspNetReact-Demo.sln"
+                "${workspaceFolder}/API"
             ],
             "problemMatcher": "$msCompile"
         }

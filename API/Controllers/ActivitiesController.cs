@@ -1,46 +1,43 @@
 using Application.Activities;
-using Domain;
-using MediatR;
+using Application.DTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Persistence;
 
 namespace API.Controllers
 {
+    [Authorize]
     public class ActivitiesController : BaseApiController
     {
-
-        [HttpGet] //api/activities
-        public async Task<ActionResult<List<Activity>>> GetActivitiesAsync(){
-            return await Mediator.Send(new List.Query());
-        }
-
-        [HttpGet("{id}")] //api/activities/id
-        public async Task<ActionResult<Activity>> GetActivityAsync(Guid id){
-            return await Mediator.Send(new Details.Query{Id = id});
-        }
-
-        [HttpPost] //api/activities
-        public async Task<IActionResult> CreateActivityAsync(Activity activity)
+        [AllowAnonymous]
+        [HttpGet]
+        public async Task<IActionResult> GetActivities()
         {
-            await Mediator.Send(new Create.Command{Activity = activity});
-            return Ok();
+            return HandleResult(await Mediator.Send(new List.Query()));
         }
 
-        [HttpPut("{id}")] //api/activities
-        public async Task<IActionResult> EditActivityAsync(Guid id, Activity activity)
+        [AllowAnonymous]
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetActivity(Guid id)
         {
-            activity.Id = id;
-            await Mediator.Send(new Edit.Command{Activity = activity});
-            return Ok();
+            return HandleResult(await Mediator.Send(new Details.Query { Id = id }));
         }
 
-        
-        [HttpDelete("{id}")] //api/activities
-        public async Task<IActionResult> DeleteActivityAsync(Guid id){
-            await Mediator.Send(new Delete.Command{Id = id});
-            return Ok();
+        [HttpPost]
+        public async Task<IActionResult> CreateActivity(ActivityFormDto activity)
+        {
+            return HandleResult(await Mediator.Send(new Create.Command { Activity = activity }));
         }
 
+        [HttpPut("{id}")]
+        public async Task<IActionResult> EditActivity(Guid id, ActivityFormDto activity)
+        {
+            return HandleResult(await Mediator.Send(new Edit.Command { Id = id, Activity = activity }));
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteActivity(Guid id)
+        {
+            return HandleResult(await Mediator.Send(new Delete.Command { Id = id }));
+        }
     }
 }

@@ -1,0 +1,12 @@
+{
+  "BaseUrl": "http://localhost:3000",
+  "ApiUrl": "http://localhost:5000/api",
+  "Headless": true,
+  "SlowMo": 0,
+  "TestUser": {
+    "Email": "test@test.com",
+    "Password": "Pa$$w0rd",
+    "DisplayName": "Test User",
+    "Username": "testuser"
+  }
+}
