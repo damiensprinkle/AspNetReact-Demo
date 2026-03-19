@@ -43,18 +43,22 @@ namespace Tests.E2E.Fixtures
         }
 
         /// <summary>Creates a fresh isolated browser context for a single test.</summary>
-        public async Task<IBrowserContext> NewContextAsync() =>
-            await Browser.NewContextAsync(new BrowserNewContextOptions
+        public async Task<IBrowserContext> NewContextAsync()
+        {
+            return await Browser.NewContextAsync(new BrowserNewContextOptions
             {
                 BaseURL      = Settings.BaseUrl,
                 ViewportSize = new ViewportSize { Width = 1280, Height = 720 },
             });
+        }
 
         /// <summary>
         /// Returns the credentials for the given account role from this collection's pool.
         /// </summary>
-        public TestUserSettings GetAccount(AutomationAccount account) =>
-            Settings.GetAccount(PoolName, account);
+        public TestUserSettings GetAccount(AutomationAccount account)
+        {
+            return Settings.GetAccount(PoolName, account);
+        }
 
         private static TestSettings LoadSettings()
         {

@@ -60,9 +60,14 @@ public abstract class ApiTestBase : IAsyncLifetime
         Auth = ApiClientFactory.Wrap("http://localhost/", http);
     }
 
-    public Task DisposeAsync() => Task.CompletedTask;
+    public Task DisposeAsync()
+    {
+        return Task.CompletedTask;
+    }
 
     /// <summary>Creates a fresh anonymous typed client wrapping the in-process factory.</summary>
-    protected IClient CreateClient() =>
-        ApiClientFactory.Wrap("http://localhost/", Factory.CreateClient());
+    protected IClient CreateClient()
+    {
+        return ApiClientFactory.Wrap("http://localhost/", Factory.CreateClient());
+    }
 }

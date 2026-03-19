@@ -12,8 +12,10 @@ namespace Tests.Client
     public static class ApiClientFactory
     {
         /// <summary>Creates an anonymous typed client for a live server.</summary>
-        public static IClient CreateAnonymous(string baseUrl) =>
-            new Client(Normalize(baseUrl), new HttpClient());
+        public static IClient CreateAnonymous(string baseUrl)
+        {
+            return new Client(Normalize(baseUrl), new HttpClient());
+        }
 
         /// <summary>Creates a Bearer-authenticated typed client for a live server.</summary>
         public static IClient CreateAuthenticated(string baseUrl, string token)
@@ -29,10 +31,14 @@ namespace Tests.Client
         /// Used by Tests.API where <c>WebApplicationFactory.CreateClient()</c> provides
         /// a pre-configured in-process client.
         /// </summary>
-        public static IClient Wrap(string baseUrl, HttpClient httpClient) =>
-            new Client(baseUrl, httpClient);
+        public static IClient Wrap(string baseUrl, HttpClient httpClient)
+        {
+            return new Client(baseUrl, httpClient);
+        }
 
-        private static string Normalize(string url) =>
-            url.EndsWith('/') ? url : url + "/";
+        private static string Normalize(string url)
+        {
+            return url.EndsWith('/') ? url : url + "/";
+        }
     }
 }

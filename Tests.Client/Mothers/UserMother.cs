@@ -19,16 +19,20 @@ namespace Tests.Client.Mothers
         }
 
         /// <summary>Registers (or returns the cached) default test user.</summary>
-        public Task<UserDto> DefaultAsync() =>
-            GetOrCreateAsync("default", () => new RegisterDtoBuilder().Build());
+        public Task<UserDto> DefaultAsync()
+        {
+            return GetOrCreateAsync("default", () => new RegisterDtoBuilder().Build());
+        }
 
         /// <summary>Registers (or returns the cached) sys-admin test user.</summary>
-        public Task<UserDto> SysAdminAsync() =>
-            GetOrCreateAsync("sysadmin", () => new RegisterDtoBuilder()
+        public Task<UserDto> SysAdminAsync()
+        {
+            return GetOrCreateAsync("sysadmin", () => new RegisterDtoBuilder()
                 .Set(x => x.DisplayName, "Sys Admin")
                 .Set(x => x.Email,       "sysadmin1@test.com")
                 .Set(x => x.Username,    "sysadmin1")
                 .Build());
+        }
 
         /// <summary>
         /// Returns the cached <see cref="UserDto"/> for <paramref name="key"/> if it exists,

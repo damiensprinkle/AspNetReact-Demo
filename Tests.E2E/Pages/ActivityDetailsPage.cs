@@ -12,8 +12,15 @@ namespace Tests.E2E.Pages
         public ILocator EditButton => page.Locator("[data-testid='edit-button']");
         public ILocator CancelButton => page.Locator("[data-testid='cancel-button']");
 
-        public async Task<string> GetTitleAsync() => await Title.InnerTextAsync();
-        public async Task<string> GetDescriptionAsync() => await Description.InnerTextAsync();
+        public async Task<string> GetTitleAsync()
+        {
+            return await Title.InnerTextAsync();
+        }
+
+        public async Task<string> GetDescriptionAsync()
+        {
+            return await Description.InnerTextAsync();
+        }
 
         /// <summary>Clicks Edit and returns the form page for this activity.</summary>
         public async Task<ActivityFormPage> ClickEditAsync()

@@ -27,7 +27,7 @@ Tests.Client   ← NSwag-generated typed client + ApiClientFactory
 
 ### Tests.Client — Shared API Client
 
-A class library that owns the NSwag-generated typed C# client and a small factory for creating instances of it. Both test projects depend on this library so API calls are made through the same strongly-typed contract everywhere — no raw `HttpClient` usage in tests.
+A class library that owns the NSwag-generated typed C# client, a factory for creating instances of it, fluent DTO builders, and API-backed Object Mothers. Both test projects depend on this library so API calls, test data construction, and shared test objects are consistent everywhere.
 
 **`ApiClient.g.cs`** is auto-generated from `swagger.json` before every build via an MSBuild NSwag target. The committed copy is used in CI if NSwag is not installed globally.
 
@@ -43,6 +43,47 @@ To refresh `swagger.json` from a running API:
 ```bash
 dotnet swagger tofile -output Tests.Client/swagger.json http://localhost:5000/swagger/v1/swagger.json
 ```
+
+#### Builders
+
+Fluent builders for each request DTO. Every builder starts from sensible defaults so tests only declare what is relevant to them. Mutations are queued and applied to a fresh default on each `Build()` call, so the same builder instance is safe to reuse.
+
+```csharp
+// Use defaults
+var dto = new ActivityFormDtoBuilder().Build();
+
+// Override specific fields
+var dto = new ActivityFormDtoBuilder()
+    .Set(x => x.Title, "Custom Title")
+    .Set(x => x.City, "Paris")
+    .Build();
+```
+
+| Builder | DTO |
+|---|---|
+| `ActivityFormDtoBuilder` | `ActivityFormDto` |
+| `LoginDtoBuilder` | `LoginDto` |
+| `RegisterDtoBuilder` | `RegisterDto` |
+
+#### Object Mothers
+
+Instance classes that call the real API to create objects and cache the results. Repeated calls for the same key return the same `ActivityDto` / `UserDto` without hitting the API again. Mothers require an authenticated `IClient` and are initialised automatically by `PageTestBase` after login.
+
+```csharp
+// Cached — API called once, same object returned on every subsequent call
+var activity = await Activities.DefaultAsync();
+var activity = await Activities.GetOrCreateAsync("paris", () =>
+    new ActivityFormDtoBuilder().Set(x => x.City, "Paris").Build());
+
+// Not cached — new API call every time, for data that must be unique per test
+var activity = await Activities.CreateOnceAsync(
+    new ActivityFormDtoBuilder().Set(x => x.Title, $"Delete Me {Guid.NewGuid()}").Build());
+```
+
+| Mother | Creates via API | Cache key |
+|---|---|---|
+| `ActivityMother` | `CreateActivityAsync` | string key passed to `GetOrCreateAsync` |
+| `UserMother` | `RegisterAsync` | string key passed to `GetOrCreateAsync` |
 
 ---
 
@@ -128,7 +169,27 @@ Tests in `AuthTests` that specifically cover the login/logout UI flow drive the 
 
 #### Test data
 
-`SeedActivityAsync` creates test data by calling `ApiClientFactory.CreateAuthenticated` and posting directly to the API. This keeps edit/delete tests focused on what they actually test and removes ordering dependencies between tests.
+`PageTestBase` exposes two ways to work with test data after login:
+
+**Mothers** (`Activities`, `Users`) — API-backed Object Mothers available as properties on `PageTestBase`. Each mother holds its own `IClient` (the browser session's token) and a cache. Use these for shared data that should be created once and reused:
+
+```csharp
+var activity = await Activities.DefaultAsync();
+var activity = await Activities.GetOrCreateAsync("key", () => new ActivityFormDtoBuilder().Build());
+```
+
+**`SeedActivityAsync`** — creates a one-off activity directly via the API for tests that need isolated, unique data. Pass a builder-constructed DTO or omit it to fall back to `ActivityMother.Default`:
+
+```csharp
+await SeedActivityAsync(new ActivityFormDtoBuilder().Set(x => x.Title, $"Delete Me {Guid.NewGuid()}").Build());
+```
+
+**`GetApiAsync()`** — performs its own independent login for the current test account and returns an authenticated `IClient` for ad-hoc API calls not covered by a mother. Because JWT is stateless, the separate token this creates coexists with the browser session token without conflict:
+
+```csharp
+var apiClient = await GetApiAsync();
+var activity  = await apiClient.GetActivityAsync(id);
+```
 
 #### Page objects
 

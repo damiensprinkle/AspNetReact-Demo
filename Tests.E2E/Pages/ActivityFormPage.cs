@@ -15,8 +15,10 @@ namespace Tests.E2E.Pages
         public ILocator SubmitButton     => page.Locator("[data-testid='submit-button']");
         public ILocator CancelButton     => page.Locator("[data-testid='cancel-button']");
 
-        public async Task NavigateToCreateAsync() =>
+        public async Task NavigateToCreateAsync()
+        {
             await page.GotoAsync("/activities/create");
+        }
 
         public async Task FillFormAsync(string title, string description, string category,
             string date, string city, string venue)

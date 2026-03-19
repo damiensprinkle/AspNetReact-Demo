@@ -74,15 +74,19 @@ namespace Tests.E2E.Fixtures
         /// <summary>
         /// Returns the credentials for the given account from the current pool.
         /// </summary>
-        protected TestUserSettings GetAccount(AutomationAccount account) =>
-            Fixture.GetAccount(account);
+        protected TestUserSettings GetAccount(AutomationAccount account)
+        {
+            return Fixture.GetAccount(account);
+        }
 
         /// <summary>
         /// Logs in as the SysAdmin account from the current pool.
         /// Call explicitly in tests that are not decorated with [UseAccount].
         /// </summary>
-        protected Task LoginAsTestUserAsync() =>
-            LoginAsync(Fixture.GetAccount(AutomationAccount.SysAdmin));
+        protected Task LoginAsTestUserAsync()
+        {
+            return LoginAsync(Fixture.GetAccount(AutomationAccount.SysAdmin));
+        }
 
         /// <summary>
         /// Registers the given account via the API (idempotent), logs in, then injects

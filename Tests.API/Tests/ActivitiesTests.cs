@@ -6,15 +6,18 @@ namespace Tests.API.Tests;
 [Collection("Api")]
 public class ActivitiesTests(ApiFactory factory) : ApiTestBase(factory)
 {
-    private static ActivityFormDto NewActivity(string suffix = "") => new()
+    private static ActivityFormDto NewActivity(string suffix = "")
     {
-        Title       = $"Test Activity {suffix}",
-        Date        = DateTimeOffset.UtcNow.AddDays(1),
-        Description = "Integration test activity",
-        Category    = "culture",
-        City        = "London",
-        Venue       = "Tate Modern",
-    };
+        return new()
+        {
+            Title       = $"Test Activity {suffix}",
+            Date        = DateTimeOffset.UtcNow.AddDays(1),
+            Description = "Integration test activity",
+            Category    = "culture",
+            City        = "London",
+            Venue       = "Tate Modern",
+        };
+    }
 
     [Fact]
     public async Task GetActivities_ReturnsOk()

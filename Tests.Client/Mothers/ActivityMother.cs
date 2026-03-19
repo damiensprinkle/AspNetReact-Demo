@@ -19,15 +19,19 @@ namespace Tests.Client.Mothers
         }
 
         /// <summary>Creates (or returns the cached) default activity.</summary>
-        public Task<ActivityDto> DefaultAsync() =>
-            GetOrCreateAsync("default", () => new ActivityFormDtoBuilder().Build());
+        public Task<ActivityDto> DefaultAsync()
+        {
+            return GetOrCreateAsync("default", () => new ActivityFormDtoBuilder().Build());
+        }
 
         /// <summary>Creates (or returns the cached) activity set one year in the future.</summary>
-        public Task<ActivityDto> FutureAsync() =>
-            GetOrCreateAsync("future", () => new ActivityFormDtoBuilder()
+        public Task<ActivityDto> FutureAsync()
+        {
+            return GetOrCreateAsync("future", () => new ActivityFormDtoBuilder()
                 .Set(x => x.Title, "Future Activity")
                 .Set(x => x.Date, DateTimeOffset.UtcNow.AddYears(1))
                 .Build());
+        }
 
         /// <summary>
         /// Returns the cached <see cref="ActivityDto"/> for <paramref name="key"/> if it exists,
@@ -48,7 +52,9 @@ namespace Tests.Client.Mothers
         /// Creates a new activity from <paramref name="dto"/> via the API every time — no caching.
         /// Use this for one-off test data that must not be shared between tests.
         /// </summary>
-        public Task<ActivityDto> CreateOnceAsync(ActivityFormDto dto) =>
-            _client.CreateActivityAsync(dto);
+        public Task<ActivityDto> CreateOnceAsync(ActivityFormDto dto)
+        {
+            return _client.CreateActivityAsync(dto);
+        }
     }
 }
