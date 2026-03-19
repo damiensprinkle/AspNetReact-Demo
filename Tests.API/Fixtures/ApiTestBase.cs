@@ -1,5 +1,5 @@
-using ApiClientNs = Tests.API.Client;
-using Tests.API.Client;
+using System.Net.Http.Headers;
+using Tests.Client;
 
 namespace Tests.API.Fixtures;
 
@@ -55,17 +55,14 @@ public abstract class ApiTestBase : IAsyncLifetime
 
         var http = Factory.CreateClient();
         http.DefaultRequestHeaders.Authorization =
-            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", user.Token);
+            new AuthenticationHeaderValue("Bearer", user.Token);
 
-        Auth = new ApiClientNs.Client("http://localhost/", http);
+        Auth = ApiClientFactory.Wrap("http://localhost/", http);
     }
 
     public Task DisposeAsync() => Task.CompletedTask;
 
-    /// <summary>Creates a fresh anonymous typed client.</summary>
-    protected IClient CreateClient()
-    {
-        var http = Factory.CreateClient();
-        return new ApiClientNs.Client("http://localhost/", http);
-    }
+    /// <summary>Creates a fresh anonymous typed client wrapping the in-process factory.</summary>
+    protected IClient CreateClient() =>
+        ApiClientFactory.Wrap("http://localhost/", Factory.CreateClient());
 }

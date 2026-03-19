@@ -1,20 +1,24 @@
+using Tests.E2E.Config;
 using Tests.E2E.Fixtures;
 using Tests.E2E.Pages;
+using Xunit.Abstractions;
 
 namespace Tests.E2E.Tests
 {
-    [Collection("Playwright")]
+    [Collection("Playwright.2")]
     public class AuthTests : PageTestBase
     {
-        public AuthTests(PlaywrightFixture fixture) : base(fixture) { }
+        public AuthTests(PlaywrightFixture fixture, ITestOutputHelper output)
+            : base(fixture, output) { }
 
         [Fact]
         public async Task Login_WithValidCredentials_RedirectsToDashboard()
         {
+            var account = GetAccount(AutomationAccount.SysAdmin);
             await Page.GotoAsync("/login");
             var loginPage = new LoginPage(Page);
 
-            await loginPage.LoginAsync(Settings.TestUser.Email, Settings.TestUser.Password);
+            await loginPage.LoginAsync(account.Email, account.Password);
 
             await Page.WaitForURLAsync("**/activities");
             Assert.Contains("/activities", Page.Url);
@@ -42,9 +46,9 @@ namespace Tests.E2E.Tests
 
             await registerPage.RegisterAsync(
                 displayName: $"User {unique}",
-                username: $"user{unique}",
-                email: $"{unique}@test.com",
-                password: "Pa$$w0rd");
+                username:    $"user{unique}",
+                email:       $"{unique}@test.com",
+                password:    "Pa$$w0rd");
 
             await Page.WaitForURLAsync("**/activities");
             Assert.Contains("/activities", Page.Url);

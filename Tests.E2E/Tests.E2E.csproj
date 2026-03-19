@@ -11,24 +11,33 @@
 
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="3.2.0" />
+    <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="14.11.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.1" />
     <PackageReference Include="Microsoft.Playwright" Version="1.49.0" />
-    <PackageReference Include="System.Net.Http.Json" Version="7.0.0" />
     <PackageReference Include="xunit" Version="2.4.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Shared typed API client (NSwag-generated) -->
+    <ProjectReference Include="..\Tests.Client\Tests.Client.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Using Include="Xunit" />
   </ItemGroup>
 
-  <!-- Copy test settings file to output directory -->
+  <!-- Copy test settings and visual baselines to output directory -->
   <ItemGroup>
     <None Update="testsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Tests\Visual\Baselines\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>Baselines\%(RecursiveDir)%(Filename)%(Extension)</TargetPath>
     </None>
   </ItemGroup>
 

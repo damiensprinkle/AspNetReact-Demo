@@ -23,6 +23,10 @@ out/
 # E2E test local overrides (credentials, environment-specific URLs)
 **/testsettings.local.json
 
+# Visual test output — actual screenshots, diff images, and HTML report
+# Baselines (Tests/Visual/Baselines/) are committed; these are generated at runtime
+**/VisualResults/
+
 # Node / frontend
 client-app/node_modules/
 client-app/dist/

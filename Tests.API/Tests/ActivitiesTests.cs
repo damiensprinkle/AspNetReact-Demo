@@ -1,4 +1,4 @@
-using Tests.API.Client;
+using Tests.Client;
 using Tests.API.Fixtures;
 
 namespace Tests.API.Tests;

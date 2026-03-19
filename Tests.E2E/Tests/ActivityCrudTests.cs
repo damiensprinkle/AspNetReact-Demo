@@ -1,20 +1,19 @@
+using Tests.Client.Builders;
+using Tests.E2E.Config;
 using Tests.E2E.Fixtures;
 using Tests.E2E.Pages;
+using Xunit.Abstractions;
 
 namespace Tests.E2E.Tests
 {
-    [Collection("Playwright")]
+    [Collection("Playwright.1")]
     public class ActivityCrudTests : PageTestBase
     {
-        public ActivityCrudTests(PlaywrightFixture fixture) : base(fixture) { }
-
-        public override async Task InitializeAsync()
-        {
-            await base.InitializeAsync();
-            await LoginAsTestUserAsync();
-        }
+        public ActivityCrudTests(PlaywrightFixture fixture, ITestOutputHelper output)
+            : base(fixture, output) { }
 
         [Fact]
+        [UseAccount(AutomationAccount.SysAdmin)]
         public async Task CreateActivity_WithValidData_AppearsOnDetailPage()
         {
             var title    = $"E2E Activity {Guid.NewGuid():N}";
@@ -35,6 +34,7 @@ namespace Tests.E2E.Tests
         }
 
         [Fact]
+        [UseAccount(AutomationAccount.SysAdmin)]
         public async Task CreateActivity_ThenNavigateToList_ShowsNewActivity()
         {
             var title    = $"List Check {Guid.NewGuid():N}";
@@ -60,10 +60,11 @@ namespace Tests.E2E.Tests
         }
 
         [Fact]
+        [UseAccount(AutomationAccount.SysAdmin)]
         public async Task EditActivity_UpdatesTitle_ReflectedInDetails()
         {
-            // Seed via API — the create flow is not what this test is testing
-            var activityId = await SeedActivityAsync($"Edit Me {Guid.NewGuid():N}");
+            var activityId = await SeedActivityAsync(
+                new ActivityFormDtoBuilder().Set(x => x.Title, $"Edit Me {Guid.NewGuid():N}").Build());
 
             await Page.GotoAsync($"/activities/{activityId}");
             var detailsPage = new ActivityDetailsPage(Page);
@@ -80,11 +81,12 @@ namespace Tests.E2E.Tests
         }
 
         [Fact]
+        [UseAccount(AutomationAccount.SysAdmin)]
         public async Task DeleteActivity_RemovesItFromList()
         {
-            // Seed via API — the create flow is not what this test is testing
             var title = $"Delete Me {Guid.NewGuid():N}";
-            await SeedActivityAsync(title);
+            await SeedActivityAsync(
+                new ActivityFormDtoBuilder().Set(x => x.Title, title).Build());
 
             var activitiesPage = new ActivitiesPage(Page);
             await activitiesPage.NavigateAsync();
@@ -99,6 +101,7 @@ namespace Tests.E2E.Tests
         }
 
         [Fact]
+        [UseAccount(AutomationAccount.SysAdmin)]
         public async Task CreateActivity_CancelButton_ReturnsToList()
         {
             var formPage = new ActivityFormPage(Page);
@@ -108,7 +111,7 @@ namespace Tests.E2E.Tests
 
             Assert.Contains("/activities", Page.Url);
             Assert.DoesNotContain("/create", Page.Url);
-            _ = activitiesPage; // returned page object available for further assertions
+            _ = activitiesPage;
         }
     }
 }

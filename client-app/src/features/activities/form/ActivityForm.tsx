@@ -7,7 +7,7 @@ import { useNavigate, useParams } from "react-router-dom";
 
 export default observer(function ActivityForm() {
   const { activityStore } = useStore();
-  const { createActivity, updateActivity, loading, selectActivity, selectedActivity } = activityStore;
+  const { updateActivity, loading, selectActivity, selectedActivity } = activityStore;
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 

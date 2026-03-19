@@ -14,40 +14,19 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="7.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="7.0.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.1" />
-    <PackageReference Include="NSwag.Core" Version="14.1.0" />
-    <PackageReference Include="NSwag.MSBuild" Version="14.1.0">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
     <PackageReference Include="xunit" Version="2.4.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5" />
   </ItemGroup>
 
-  <!-- Reference the API project so WebApplicationFactory<Program> resolves -->
   <ItemGroup>
+    <!-- WebApplicationFactory<Program> -->
     <ProjectReference Include="..\API\API.csproj" />
+    <!-- Shared typed API client (NSwag-generated) -->
+    <ProjectReference Include="..\Tests.Client\Tests.Client.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Using Include="Xunit" />
   </ItemGroup>
-
-  <!-- Copy swagger.json to output so NSwag can find it at build time -->
-  <ItemGroup>
-    <None Update="swagger.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
-  <!--
-    NSwag code generation: runs nswag.json before every build.
-    Regenerate the client manually: dotnet nswag run nswag.json /runtime:Net70
-    Regenerate swagger.json from live API: dotnet swagger tofile - -output swagger.json http://localhost:5000/swagger/v1/swagger.json
-  -->
-  <Target Name="NSwag" BeforeTargets="BeforeBuild">
-    <Exec Command="nswag run nswag.json"
-          WorkingDirectory="$(MSBuildProjectDirectory)"
-          ContinueOnError="true" />
-  </Target>
 
 </Project>

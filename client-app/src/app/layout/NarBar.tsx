@@ -1,11 +1,9 @@
 import { Button, Container, Menu } from "semantic-ui-react";
-import { useStore } from "../stores/store";
-
+import { useNavigate } from "react-router-dom";
 
 export default function NavBar() {
+  const navigate = useNavigate();
 
-  const {activityStore} = useStore();
-  
   return (
     <Menu inverted fixed="top">
       <Container>
@@ -20,7 +18,7 @@ export default function NavBar() {
         <Menu.Item name="Activities"></Menu.Item>
         <Menu.Item>
           <Button
-            onClick={() =>activityStore.openForm()}
+            onClick={() => navigate("/activities/create")}
             positive
             content="Create Activity"
           ></Button>

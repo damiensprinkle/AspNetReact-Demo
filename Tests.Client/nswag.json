@@ -55,7 +55,7 @@
       "wrapResponseMethods": [],
       "generateResponseClasses": true,
       "responseClass": "SwaggerResponse",
-      "namespace": "Tests.API.Client",
+      "namespace": "Tests.Client",
       "requiredPropertiesMustBeDefined": true,
       "dateType": "System.DateTimeOffset",
       "jsonConverters": null,

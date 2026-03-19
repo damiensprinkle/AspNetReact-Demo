@@ -1,12 +1,36 @@
 {
   "BaseUrl": "http://localhost:3000",
-  "ApiUrl": "http://localhost:5000/api",
+  "ApiUrl": "http://localhost:5000",
   "Headless": true,
   "SlowMo": 0,
-  "TestUser": {
-    "Email": "test@test.com",
-    "Password": "Pa$$w0rd",
-    "DisplayName": "Test User",
-    "Username": "testuser"
+  "Pools": {
+    "Pool1": {
+      "SysAdmin": {
+        "Email": "sysadmin1@test.com",
+        "Password": "Pa$$w0rd",
+        "DisplayName": "Sys Admin 1",
+        "Username": "sysadmin1"
+      },
+      "StandardUser": {
+        "Email": "user1@test.com",
+        "Password": "Pa$$w0rd",
+        "DisplayName": "User 1",
+        "Username": "user1"
+      }
+    },
+    "Pool2": {
+      "SysAdmin": {
+        "Email": "sysadmin2@test.com",
+        "Password": "Pa$$w0rd",
+        "DisplayName": "Sys Admin 2",
+        "Username": "sysadmin2"
+      },
+      "StandardUser": {
+        "Email": "user2@test.com",
+        "Password": "Pa$$w0rd",
+        "DisplayName": "User 2",
+        "Username": "user2"
+      }
+    }
   }
 }

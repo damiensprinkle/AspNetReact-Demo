@@ -1,12 +1,14 @@
 using Tests.E2E.Fixtures;
 using Tests.E2E.Pages;
+using Xunit.Abstractions;
 
 namespace Tests.E2E.Tests
 {
-    [Collection("Playwright")]
+    [Collection("Playwright.1")]
     public class ActivityListTests : PageTestBase
     {
-        public ActivityListTests(PlaywrightFixture fixture) : base(fixture) { }
+        public ActivityListTests(PlaywrightFixture fixture, ITestOutputHelper output)
+            : base(fixture, output) { }
 
         [Fact]
         public async Task ActivitiesPage_LoadsAndDisplaysActivities()
