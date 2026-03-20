@@ -1,3 +1,4 @@
+using Tests.E2E.Config;
 using Tests.E2E.Fixtures;
 using Tests.E2E.Pages;
 using Xunit.Abstractions;
@@ -11,6 +12,7 @@ namespace Tests.E2E.Tests
             : base(fixture, output) { }
 
         [Fact]
+        [UseAccount(AutomationAccount.SysAdmin)]
         public async Task DetailPage_CancelButton_ReturnsToActivityList()
         {
             var activitiesPage = new ActivitiesPage(Page);
@@ -24,6 +26,7 @@ namespace Tests.E2E.Tests
         }
 
         [Fact]
+        [UseAccount(AutomationAccount.SysAdmin)]
         public async Task NavBar_ActivitiesLink_NavigatesToDashboard()
         {
             await Page.GotoAsync("/");
@@ -35,6 +38,7 @@ namespace Tests.E2E.Tests
         }
 
         [Fact]
+        [UseAccount(AutomationAccount.SysAdmin)]
         public async Task DirectUrl_ActivityDetail_LoadsCorrectActivity()
         {
             var activitiesPage = new ActivitiesPage(Page);

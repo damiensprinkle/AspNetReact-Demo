@@ -8,7 +8,7 @@ namespace Tests.E2E.Pages
         public ILocator UsernameInput    => page.GetByPlaceholder("Username");
         public ILocator EmailInput       => page.GetByPlaceholder("Email");
         public ILocator PasswordInput    => page.GetByPlaceholder("Password");
-        public ILocator SubmitButton     => page.GetByRole(AriaRole.Button, new() { Name = "Register" });
+        public ILocator SubmitButton     => page.Locator("button[type='submit']");
         public ILocator ErrorMessage     => page.Locator("[data-testid='register-error']");
 
         public async Task RegisterAsync(string displayName, string username, string email, string password)

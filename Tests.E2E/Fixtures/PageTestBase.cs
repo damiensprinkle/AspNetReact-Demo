@@ -33,6 +33,12 @@ namespace Tests.E2E.Fixtures
         private IClient? _apiClient;
         private TestUserSettings? _resolvedAccount;
 
+        // Used to name the trace file written on dispose
+        private string _testName = "unknown";
+
+        private static readonly string TracesDir =
+            Path.Combine(AppContext.BaseDirectory, "traces");
+
         /// <summary>
         /// API-backed activity mother. Available after login; use in tests to obtain
         /// cached <see cref="ActivityDto"/> instances created via the real API.
@@ -56,7 +62,17 @@ namespace Tests.E2E.Fixtures
             Context = await Fixture.NewContextAsync();
             Page    = await Context.NewPageAsync();
 
-            var account = ResolveAccount();
+            var (account, testName) = ResolveTestInfo();
+            _testName = testName;
+
+            Directory.CreateDirectory(TracesDir);
+            await Context.Tracing.StartAsync(new()
+            {
+                Screenshots = true,
+                Snapshots   = true,
+                Sources     = true,
+            });
+
             if (account is not null)
             {
                 _resolvedAccount = Fixture.GetAccount(account.Value);
@@ -66,6 +82,10 @@ namespace Tests.E2E.Fixtures
 
         public virtual async Task DisposeAsync()
         {
+            await Context.Tracing.StopAsync(new()
+            {
+                Path = Path.Combine(TracesDir, $"{_testName}.zip"),
+            });
             await Context.CloseAsync();
         }
 
@@ -86,6 +106,28 @@ namespace Tests.E2E.Fixtures
         protected Task LoginAsTestUserAsync()
         {
             return LoginAsync(Fixture.GetAccount(AutomationAccount.SysAdmin));
+        }
+
+        /// <summary>
+        /// Registers the given account via the API without logging in or touching the browser session.
+        /// Use in tests that drive the login/register UI and need the account to exist first.
+        /// Safe to call multiple times — registration is idempotent.
+        /// </summary>
+        protected async Task EnsureAccountExistsAsync(AutomationAccount account)
+        {
+            var settings = Fixture.GetAccount(account);
+            var client   = ApiClientFactory.CreateAnonymous(Settings.ApiUrl);
+            try
+            {
+                await client.RegisterAsync(new RegisterDto
+                {
+                    Email       = settings.Email,
+                    Password    = settings.Password,
+                    DisplayName = settings.DisplayName,
+                    Username    = settings.Username,
+                });
+            }
+            catch { /* already exists */ }
         }
 
         /// <summary>
@@ -184,11 +226,12 @@ namespace Tests.E2E.Fixtures
         // ── Account resolution ────────────────────────────────────────────────────
 
         /// <summary>
-        /// Resolves the <see cref="AutomationAccount"/> for the current test.
+        /// Resolves the test method name and <see cref="AutomationAccount"/> for the current test
+        /// in a single reflection pass.
         /// Method-level [UseAccount] takes precedence over class-level.
-        /// Returns null if neither is present (no auto-login).
+        /// Account is null if neither is present (no auto-login).
         /// </summary>
-        private AutomationAccount? ResolveAccount()
+        private (AutomationAccount? account, string testName) ResolveTestInfo()
         {
             // xUnit v2: TestOutputHelper holds a private ITest field that exposes the method name,
             // letting us reflect on [UseAccount] before the test body runs.
@@ -199,14 +242,16 @@ namespace Tests.E2E.Fixtures
                 .FirstOrDefault(f => typeof(ITest).IsAssignableFrom(f.FieldType));
 
             if (testField?.GetValue(_output) is not ITest test)
-                return null;
+                return (null, "unknown");
 
             var methodName = test.TestCase.TestMethod.Method.Name;
             var type       = GetType();
             var method     = type.GetMethod(methodName, BindingFlags.Public | BindingFlags.Instance);
 
-            return (method?.GetCustomAttribute<UseAccountAttribute>()
-                    ?? type.GetCustomAttribute<UseAccountAttribute>())?.Account;
+            var account = (method?.GetCustomAttribute<UseAccountAttribute>()
+                           ?? type.GetCustomAttribute<UseAccountAttribute>())?.Account;
+
+            return (account, methodName);
         }
     }
 }

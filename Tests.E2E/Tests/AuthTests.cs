@@ -14,6 +14,7 @@ namespace Tests.E2E.Tests
         [Fact]
         public async Task Login_WithValidCredentials_RedirectsToDashboard()
         {
+            await EnsureAccountExistsAsync(AutomationAccount.SysAdmin);
             var account = GetAccount(AutomationAccount.SysAdmin);
             await Page.GotoAsync("/login");
             var loginPage = new LoginPage(Page);

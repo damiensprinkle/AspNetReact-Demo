@@ -157,5 +157,14 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: playwright-traces
-          path: "**/*.zip"
+          path: Tests.E2E/bin/Release/net7.0/traces/
+          retention-days: 7
+
+      - name: Upload visual test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-test-report
+          path: Tests.E2E/bin/Release/net7.0/VisualResults/
+          if-no-files-found: ignore
           retention-days: 7
