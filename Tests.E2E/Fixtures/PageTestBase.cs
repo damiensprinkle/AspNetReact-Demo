@@ -190,12 +190,15 @@ namespace Tests.E2E.Fixtures
         /// </summary>
         private AutomationAccount? ResolveAccount()
         {
-            // xUnit v2: TestOutputHelper holds a private ITest field that exposes
-            // the method name, letting us reflect on [UseAccount] before the test runs.
-            var field = _output.GetType()
-                .GetField("_test", BindingFlags.NonPublic | BindingFlags.Instance);
+            // xUnit v2: TestOutputHelper holds a private ITest field that exposes the method name,
+            // letting us reflect on [UseAccount] before the test body runs.
+            // Search by field type rather than by name — the field is "test" in some runner
+            // builds and "_test" in others, so matching on name is fragile across environments.
+            var testField = _output.GetType()
+                .GetFields(BindingFlags.NonPublic | BindingFlags.Instance)
+                .FirstOrDefault(f => typeof(ITest).IsAssignableFrom(f.FieldType));
 
-            if (field?.GetValue(_output) is not ITest test)
+            if (testField?.GetValue(_output) is not ITest test)
                 return null;
 
             var methodName = test.TestCase.TestMethod.Method.Name;

@@ -6,7 +6,7 @@ namespace Tests.E2E.Pages
     {
         public ILocator EmailInput    => page.GetByPlaceholder("Email");
         public ILocator PasswordInput => page.GetByPlaceholder("Password");
-        public ILocator SubmitButton  => page.GetByRole(AriaRole.Button, new() { Name = "Login" });
+        public ILocator SubmitButton  => page.Locator("button[type='submit']");
         public ILocator ErrorMessage  => page.Locator("[data-testid='login-error']");
 
         public async Task LoginAsync(string email, string password)
