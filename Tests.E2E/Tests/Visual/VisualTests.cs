@@ -25,7 +25,7 @@ namespace Tests.E2E.Tests.Visual
     {
         private readonly VisualTestContext _visual;
 
-        public VisualTests(PlaywrightFixture fixture, ITestOutputHelper output, VisualTestContext visual)
+        public VisualTests(PlaywrightFixturePool1 fixture, ITestOutputHelper output, VisualTestContext visual)
             : base(fixture, output)
         {
             _visual = visual;

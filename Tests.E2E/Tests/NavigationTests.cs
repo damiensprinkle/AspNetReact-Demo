@@ -7,7 +7,7 @@ namespace Tests.E2E.Tests
     [Collection("Playwright.2")]
     public class NavigationTests : PageTestBase
     {
-        public NavigationTests(PlaywrightFixture fixture, ITestOutputHelper output)
+        public NavigationTests(PlaywrightFixturePool2 fixture, ITestOutputHelper output)
             : base(fixture, output) { }
 
         [Fact]

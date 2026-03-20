@@ -9,7 +9,7 @@ namespace Tests.E2E.Tests
     [Collection("Playwright.1")]
     public class ActivityCrudTests : PageTestBase
     {
-        public ActivityCrudTests(PlaywrightFixture fixture, ITestOutputHelper output)
+        public ActivityCrudTests(PlaywrightFixturePool1 fixture, ITestOutputHelper output)
             : base(fixture, output) { }
 
         [Fact]

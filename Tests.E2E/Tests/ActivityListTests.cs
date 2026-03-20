@@ -7,7 +7,7 @@ namespace Tests.E2E.Tests
     [Collection("Playwright.1")]
     public class ActivityListTests : PageTestBase
     {
-        public ActivityListTests(PlaywrightFixture fixture, ITestOutputHelper output)
+        public ActivityListTests(PlaywrightFixturePool1 fixture, ITestOutputHelper output)
             : base(fixture, output) { }
 
         [Fact]

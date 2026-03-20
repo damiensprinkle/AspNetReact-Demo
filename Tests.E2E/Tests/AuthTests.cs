@@ -8,7 +8,7 @@ namespace Tests.E2E.Tests
     [Collection("Playwright.2")]
     public class AuthTests : PageTestBase
     {
-        public AuthTests(PlaywrightFixture fixture, ITestOutputHelper output)
+        public AuthTests(PlaywrightFixturePool2 fixture, ITestOutputHelper output)
             : base(fixture, output) { }
 
         [Fact]
