@@ -138,7 +138,7 @@ Pools
 
 | Collection | Pool | Test classes |
 |---|---|---|
-| `Playwright.1` | Pool1 | `ActivityCrudTests`, `ActivityListTests` |
+| `Playwright.1` | Pool1 | `ActivityCrudTests`, `ActivityListTests`, `VisualTests` |
 | `Playwright.2` | Pool2 | `AuthTests`, `NavigationTests` |
 
 **`PlaywrightFixture`** (one per collection) owns the browser process and exposes `GetAccount(AutomationAccount)`, which resolves credentials from the collection's assigned pool.
@@ -226,6 +226,34 @@ All locators use `data-testid` attributes rather than CSS classes or text, so te
 }
 ```
 
+#### Visual regression tests
+
+`VisualTests` captures a full-page screenshot of each key route and compares it against a committed baseline using Magick.NET. Tests pass on first run, creating the baseline automatically.
+
+**Baseline workflow**
+
+Baselines live in `Tests.E2E/Tests/Visual/Baselines/` and are committed to source control. The MSBuild csproj copies them to the output directory before each run.
+
+To update baselines after an intentional UI change:
+
+```bash
+UPDATE_VISUAL_BASELINES=true dotnet test Tests.E2E --filter "FullyQualifiedName~VisualTests"
+```
+
+Then copy the updated PNGs from `bin/.../Baselines/` back into `Tests/Visual/Baselines/` and commit them.
+
+**Report**
+
+After each run an HTML report is written to `bin/.../VisualResults/report.html` with inline baseline, actual, and diff images for every test. On CI this directory is uploaded as the `visual-test-report` artifact.
+
+**Threshold**
+
+The default diff threshold is 0.1% of pixels. Adjust per test via `_visual.Comparer.Threshold`.
+
+#### Traces
+
+Every test writes a Playwright trace to `bin/.../traces/<TestName>.zip` (screenshots, DOM snapshots, and sources). On CI, traces are uploaded as the `playwright-traces` artifact when the job fails.
+
 #### Running
 
 Both the API and the frontend must be running before executing the E2E suite.
@@ -239,6 +267,9 @@ cd client-app && npm run dev
 
 # Terminal 3 — Tests
 dotnet test Tests.E2E
+
+# Run only visual tests
+dotnet test Tests.E2E --filter "FullyQualifiedName~VisualTests"
 ```
 
 To run headed or with slow motion for debugging, create `Tests.E2E/testsettings.local.json`:
@@ -260,6 +291,12 @@ Three jobs run on every push and pull request to `main`.
 |---|---|
 | `build-api` | Builds the solution and runs all `Tests.API` integration tests |
 | `build-client` | Type-checks and builds the React app |
-| `test-e2e` | Starts both servers, waits for health checks, then runs `Tests.E2E` (depends on jobs 1 & 2) |
+| `test-e2e` | Starts both servers, waits for health checks, then runs `Tests.E2E` including visual tests (depends on jobs 1 & 2) |
 
-Test results and Playwright failure traces are uploaded as artifacts.
+**Artifacts uploaded after each run:**
+
+| Artifact | Contents | Uploaded when |
+|---|---|---|
+| `e2e-test-results` | xUnit `.trx` results file | Always |
+| `playwright-traces` | Per-test trace zips (screenshots + DOM snapshots) | On failure |
+| `visual-test-report` | HTML report with baseline/actual/diff images | Always |
