@@ -16,13 +16,13 @@ jobs:
 
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: "7.0.x"
+          dotnet-version: "8.0.x"
 
       - name: Restore
-        run: dotnet restore AspNetReact-Demo.sln
+        run: dotnet restore ReactivitiesTestSuite.sln
 
       - name: Build
-        run: dotnet build AspNetReact-Demo.sln --no-restore --configuration Release
+        run: dotnet build ReactivitiesTestSuite.sln --no-restore --configuration Release
 
       - name: API Integration Tests
         run: |
@@ -82,7 +82,7 @@ jobs:
 
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: "7.0.x"
+          dotnet-version: "8.0.x"
 
       - uses: actions/setup-node@v4
         with:
@@ -92,7 +92,7 @@ jobs:
 
       # ── Build everything ──────────────────────────────────────────────────────
       - name: Restore .NET
-        run: dotnet restore AspNetReact-Demo.sln
+        run: dotnet restore ReactivitiesTestSuite.sln
 
       - name: Build API
         run: dotnet build API/API.csproj --no-restore --configuration Release
@@ -101,7 +101,7 @@ jobs:
         run: dotnet build Tests.E2E/Tests.E2E.csproj --no-restore --configuration Release
 
       - name: Install Playwright browsers
-        run: pwsh Tests.E2E/bin/Release/net7.0/playwright.ps1 install --with-deps chromium
+        run: pwsh Tests.E2E/bin/Release/net8.0/playwright.ps1 install --with-deps chromium
 
       - name: Install frontend dependencies
         working-directory: client-app
@@ -157,7 +157,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: playwright-traces
-          path: Tests.E2E/bin/Release/net7.0/traces/
+          path: Tests.E2E/bin/Release/net8.0/traces/
           retention-days: 7
 
       - name: Upload visual test report
@@ -165,6 +165,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: visual-test-report
-          path: Tests.E2E/bin/Release/net7.0/VisualResults/
+          path: Tests.E2E/bin/Release/net8.0/VisualResults/
           if-no-files-found: ignore
           retention-days: 7

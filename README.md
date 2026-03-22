@@ -1,4 +1,4 @@
-# AspNetReact Demo
+# ReactivitiesTestSuite
 
 A full-stack activity management application built with ASP.NET Core 7 and React 18 (TypeScript), used as a testing reference project.
 
