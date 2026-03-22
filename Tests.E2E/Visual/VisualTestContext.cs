@@ -13,7 +13,7 @@ namespace Tests.E2E.Visual
     /// Diff images and the HTML report are written to <c>VisualResults/</c> in the output
     /// directory (gitignored).
     /// </summary>
-    public class VisualTestContext : IAsyncDisposable
+    public class VisualTestContext : IDisposable
     {
         private readonly List<VisualTestResult> _results = new();
         private readonly string _reportPath;
@@ -35,12 +35,11 @@ namespace Tests.E2E.Visual
             lock (_results) _results.Add(result);
         }
 
-        public async ValueTask DisposeAsync()
+        public void Dispose()
         {
             if (_results.Count == 0) return;
 
             VisualReport.Generate(_results, _reportPath);
-            await Task.CompletedTask;
         }
     }
 }

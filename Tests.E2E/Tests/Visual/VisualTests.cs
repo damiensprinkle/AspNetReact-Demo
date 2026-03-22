@@ -10,13 +10,12 @@ namespace Tests.E2E.Tests.Visual
     /// Visual regression tests. Each test captures a full-page screenshot and compares it
     /// against the committed baseline in <c>Tests/Visual/Baselines/</c>.
     ///
-    /// First run: baselines are created automatically and tests pass with "New Baseline" status.
+    /// No baseline: the test fails with instructions on how to create one.
     /// Subsequent runs: pixel differences are measured; the test fails if they exceed the threshold.
     ///
-    /// To update baselines after an intentional UI change:
-    ///   set UPDATE_VISUAL_BASELINES=true
-    ///   dotnet test Tests.E2E --filter "FullyQualifiedName~VisualTests"
-    /// Then copy the updated PNGs from bin/.../Baselines/ back into Tests/Visual/Baselines/ and commit.
+    /// To create or update baselines after an intentional UI change:
+    ///   UPDATE_VISUAL_BASELINES=true dotnet test Tests.E2E --filter "FullyQualifiedName~VisualTests"
+    /// Then copy the PNGs from bin/.../Baselines/ back into Tests/Visual/Baselines/ and commit.
     ///
     /// The HTML report is written to bin/.../VisualResults/report.html after each run.
     /// </summary>
@@ -43,7 +42,7 @@ namespace Tests.E2E.Tests.Visual
             _visual.AddResult(result);
 
             Assert.True(result.Status != VisualTestStatus.Failed,
-                $"login-page: {result.DiffFraction:P3} of pixels differ (threshold {_visual.Comparer.Threshold:P3}).");
+                result.Message ?? $"login-page: {result.DiffFraction:P3} of pixels differ (threshold {_visual.Comparer.Threshold:P3}).");
         }
 
         [Fact]
@@ -58,7 +57,7 @@ namespace Tests.E2E.Tests.Visual
             _visual.AddResult(result);
 
             Assert.True(result.Status != VisualTestStatus.Failed,
-                $"register-page: {result.DiffFraction:P3} of pixels differ (threshold {_visual.Comparer.Threshold:P3}).");
+                result.Message ?? $"register-page: {result.DiffFraction:P3} of pixels differ (threshold {_visual.Comparer.Threshold:P3}).");
         }
 
         [Fact]
@@ -73,7 +72,7 @@ namespace Tests.E2E.Tests.Visual
             _visual.AddResult(result);
 
             Assert.True(result.Status != VisualTestStatus.Failed,
-                $"activities-page: {result.DiffFraction:P3} of pixels differ (threshold {_visual.Comparer.Threshold:P3}).");
+                result.Message ?? $"activities-page: {result.DiffFraction:P3} of pixels differ (threshold {_visual.Comparer.Threshold:P3}).");
         }
 
         [Fact]
@@ -83,7 +82,6 @@ namespace Tests.E2E.Tests.Visual
             await Page.GotoAsync("/activities");
             await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
-            // Click the first activity to land on a detail page
             var viewButton = Page.Locator("[data-testid='view-button']").First;
             await viewButton.ClickAsync();
             await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
@@ -93,7 +91,7 @@ namespace Tests.E2E.Tests.Visual
             _visual.AddResult(result);
 
             Assert.True(result.Status != VisualTestStatus.Failed,
-                $"activity-detail-page: {result.DiffFraction:P3} of pixels differ (threshold {_visual.Comparer.Threshold:P3}).");
+                result.Message ?? $"activity-detail-page: {result.DiffFraction:P3} of pixels differ (threshold {_visual.Comparer.Threshold:P3}).");
         }
 
         [Fact]
@@ -108,7 +106,7 @@ namespace Tests.E2E.Tests.Visual
             _visual.AddResult(result);
 
             Assert.True(result.Status != VisualTestStatus.Failed,
-                $"create-activity-page: {result.DiffFraction:P3} of pixels differ (threshold {_visual.Comparer.Threshold:P3}).");
+                result.Message ?? $"create-activity-page: {result.DiffFraction:P3} of pixels differ (threshold {_visual.Comparer.Threshold:P3}).");
         }
     }
 }

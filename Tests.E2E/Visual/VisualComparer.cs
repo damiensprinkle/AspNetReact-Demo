@@ -5,10 +5,9 @@ namespace Tests.E2E.Visual
     /// <summary>
     /// Compares a Playwright screenshot against a committed baseline image using Magick.NET.
     ///
-    /// On first run (no baseline), the screenshot is saved as the new baseline and the result
-    /// is marked <see cref="VisualTestStatus.NewBaseline"/> — the test passes.
+    /// If no baseline exists the test fails with instructions on how to create one.
     ///
-    /// Set the environment variable <c>UPDATE_VISUAL_BASELINES=true</c> to overwrite existing
+    /// Set the environment variable <c>UPDATE_VISUAL_BASELINES=true</c> to create or overwrite
     /// baselines with the current screenshots (useful after intentional UI changes).
     /// Copy updated files from the output <c>Baselines/</c> directory back into the project to commit them.
     /// </summary>
@@ -47,7 +46,23 @@ namespace Tests.E2E.Visual
 
             File.WriteAllBytes(actualPath, screenshot);
 
-            if (!File.Exists(baselinePath) || UpdateBaselines)
+            if (!File.Exists(baselinePath))
+            {
+                if (!UpdateBaselines)
+                {
+                    return new VisualTestResult(
+                        name, VisualTestStatus.Failed, 0, baselinePath, actualPath, null,
+                        $"No baseline found for '{name}'. " +
+                        $"To create one, run: UPDATE_VISUAL_BASELINES=true dotnet test Tests.E2E --filter \"FullyQualifiedName~VisualTests\" " +
+                        $"then copy Tests.E2E/bin/.../Baselines/{name}.png into Tests.E2E/Tests/Visual/Baselines/ and commit it.");
+                }
+
+                File.Copy(actualPath, baselinePath, overwrite: true);
+                return new VisualTestResult(
+                    name, VisualTestStatus.NewBaseline, 0, baselinePath, actualPath, null);
+            }
+
+            if (UpdateBaselines)
             {
                 File.Copy(actualPath, baselinePath, overwrite: true);
                 return new VisualTestResult(
